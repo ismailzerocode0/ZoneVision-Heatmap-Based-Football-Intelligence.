@@ -1,21 +1,26 @@
-ZoneVision — Heatmap-Based Football Intelligence
+# ZoneVision — Heatmap-Based Football Intelligence
 
-A deep learning–driven football analytics platform that transforms raw match statistics into tactical insights using heatmaps, sequence modeling, and multi-architecture comparison.
+> A deep learning–driven football analytics platform that transforms raw match statistics into tactical insights using heatmaps, sequence modeling, and multi-architecture comparison.
 
+---
 
-Overview
+## Overview
+
 ZoneVision analyzes Liverpool FC match data from the 2025–26 season to predict tactical outcomes and match results. The system integrates multiple data modalities and ML architectures into a unified intelligence pipeline.
-Prediction targets:
 
-Match result (Win / Draw / Lose)
-Goals scored (regression + category)
-Over/Under 2.5 goals
-Style of play (Attacking / Defensive / Balanced)
-Pressing intensity (High / Low)
-Midfield control, attack danger, dominant team
+**Prediction targets:**
+- Match result (Win / Draw / Lose)
+- Goals scored (regression + category)
+- Over/Under 2.5 goals
+- Style of play (Attacking / Defensive / Balanced)
+- Pressing intensity (High / Low)
+- Midfield control, attack danger, dominant team
 
+---
 
-Architecture Overview
+## Architecture Overview
+
+```
 Raw Excel Data (Team Stats Liverpool 25-26.xlsx)
         │
         ▼
@@ -30,8 +35,13 @@ Data Cleaning & Feature Engineering
         └──► Heatmap Images  ──► Custom CNN
                              ──► ResNet50 (fine-tuned)
                              ──► Vision Transformer (ViT-B16)
+```
 
-Project Structure
+---
+
+## Project Structure
+
+```
 ZoneVision/
 ├── DNN_PROJECT.ipynb               # Main notebook: tabular + DNN models
 ├── DNN_Match_PROJECT.ipynb         # Match analyzer: YOLO-based real-time tracking
@@ -47,71 +57,116 @@ ZoneVision/
 ├── cnn_match_predictions.csv
 ├── predictions.csv
 └── best_resnet_model.h5
+```
 
-Dataset
-Source: Custom-collected Liverpool FC match statistics (2024–2026)
-Size: ~60 matches, 104 features per match
-Target variable: Match result derived from Goals vs Conceded goals
-Key features used:
+---
 
-xG, Shots / on target, Passes / accurate, Possession, %
-Duels / won, Interceptions, Clearances, Aerial duels / won
-Opponent equivalents for all features (_opp suffix)
+## Dataset
 
+**Source:** Custom-collected Liverpool FC match statistics (2024–2026)  
+**Size:** ~60 matches, 104 features per match  
+**Target variable:** Match result derived from `Goals` vs `Conceded goals`
 
-Models & Results
-ModelTypeAccuracyLogistic RegressionBaseline75.0%Random Forest ClassifierEnsemble75.0%LSTMSequential DL75.0%Feedforward NNDeep Learning75.0%DNN (128→64→32)Deep Learning66.7%CNN (heatmap images)Computer Vision63.6%ResNet50 (fine-tuned)Transfer Learning54.5%Vision Transformer (ViT)Transformer61.8%
-Random Forest Regressor — Goal prediction: MSE = 0.0078, R² = 0.986
+**Key features used:**
+- `xG`, `Shots / on target`, `Passes / accurate`, `Possession, %`
+- `Duels / won`, `Interceptions`, `Clearances`, `Aerial duels / won`
+- Opponent equivalents for all features (`_opp` suffix)
 
-Note: ResNet50 and ViT underperformed due to domain gap — pretrained ImageNet weights are optimized for natural image textures, not synthetic 4-zone color blocks. A custom CNN with the heatmap-specific architecture was adopted as the optimal visual model.
+---
 
+## Models & Results
 
-Tech Stack
+| Model | Type | Accuracy |
+|---|---|---|
+| Logistic Regression | Baseline | **75.0%** |
+| Random Forest Classifier | Ensemble | **75.0%** |
+| LSTM | Sequential DL | **75.0%** |
+| Feedforward NN | Deep Learning | **75.0%** |
+| DNN (128→64→32) | Deep Learning | 66.7% |
+| CNN (heatmap images) | Computer Vision | 63.6% |
+| ResNet50 (fine-tuned) | Transfer Learning | 54.5% |
+| Vision Transformer (ViT) | Transformer | 61.8% |
 
-Python 3.12
-pandas, numpy, scikit-learn
-tensorflow / keras — NN, DNN, CNN, ResNet50, LSTM
-torch, transformers — Vision Transformer (ViT-B16)
-mplsoccer, matplotlib, seaborn — pitch visualization
-ultralytics (YOLOv8) — real-time player tracking
-opencv-python — video frame processing
+**Random Forest Regressor** — Goal prediction: MSE = 0.0078, R² = **0.986**
 
+> **Note:** ResNet50 and ViT underperformed due to domain gap — pretrained ImageNet weights are optimized for natural image textures, not synthetic 4-zone color blocks. A custom CNN with the heatmap-specific architecture was adopted as the optimal visual model.
 
-Real-Time Match Analyzer (DNN_Match_PROJECT)
+---
+
+## Tech Stack
+
+- **Python 3.12**
+- `pandas`, `numpy`, `scikit-learn`
+- `tensorflow` / `keras` — NN, DNN, CNN, ResNet50, LSTM
+- `torch`, `transformers` — Vision Transformer (ViT-B16)
+- `mplsoccer`, `matplotlib`, `seaborn` — pitch visualization
+- `ultralytics` (YOLOv8) — real-time player tracking
+- `opencv-python` — video frame processing
+
+---
+
+## Real-Time Match Analyzer (DNN_Match_PROJECT)
+
 A separate computer vision pipeline built on YOLOv8 for live match video:
 
-Player detection via YOLOv8n with confidence filtering
-Team classification via HSV jersey color analysis (Liverpool red vs Bournemouth blue)
-Ball detection via Hough Circles + color segmentation
-IoU-based tracking with trail visualization
-Minimap overlay projected from frame coordinates
-HUD showing live player counts, match time, and field stats
+- **Player detection** via YOLOv8n with confidence filtering
+- **Team classification** via HSV jersey color analysis (Liverpool red vs Bournemouth blue)
+- **Ball detection** via Hough Circles + color segmentation
+- **IoU-based tracking** with trail visualization
+- **Minimap overlay** projected from frame coordinates
+- **HUD** showing live player counts, match time, and field stats
 
-Run:
-bashpython analyzer.py "Liverpool vs Bournemouth.mp4" --output out.mp4
+**Run:**
+```bash
+python analyzer.py "Liverpool vs Bournemouth.mp4" --output out.mp4
+```
 
-Setup & Usage
-1. Install dependencies
-bashpip install tensorflow torch transformers ultralytics mplsoccer opencv-python scikit-learn pandas numpy seaborn matplotlib
-2. Add dataset
-Place Team Stats Liverpool 25-26.xlsx in the working directory (or /content/ on Colab).
-3. Run notebooks
-Open either notebook in Google Colab and run all cells top-to-bottom.
+---
 
-Heatmap images are auto-generated by the pipeline — no manual prep needed.
+## Setup & Usage
 
+### 1. Install dependencies
+```bash
+pip install tensorflow torch transformers ultralytics mplsoccer opencv-python scikit-learn pandas numpy seaborn matplotlib
+```
 
-Key Design Decisions
-Why heatmaps as CNN input?
+### 2. Add dataset
+Place `Team Stats Liverpool 25-26.xlsx` in the working directory (or `/content/` on Colab).
+
+### 3. Run notebooks
+Open either notebook in **Google Colab** and run all cells top-to-bottom.
+
+> Heatmap images are auto-generated by the pipeline — no manual prep needed.
+
+---
+
+## Key Design Decisions
+
+**Why heatmaps as CNN input?**  
 Raw tabular stats lose spatial context. Converting match stats to 4-zone or 9-zone pitch grids provides a visual representation of where activity concentrated, enabling image-based classification.
-Why LSTM on tabular data?
-Match stats reshaped to (samples, 1, features) allows the LSTM to treat each feature vector as a temporal step — a lightweight way to capture sequential patterns without a multi-game time series.
-Why ResNet50 underperformed?
+
+**Why LSTM on tabular data?**  
+Match stats reshaped to `(samples, 1, features)` allows the LSTM to treat each feature vector as a temporal step — a lightweight way to capture sequential patterns without a multi-game time series.
+
+**Why ResNet50 underperformed?**  
 Pretrained weights encode natural image textures (edges, shadows, complex gradients). Synthetic color-block heatmaps don't align with that feature space, causing the frozen layers to act as noise rather than useful priors.
 
-Contributors
-#NameRole1——2——3——4——5——6——
+---
 
-License
-Academic project — Helwan University, Data Science & AI Department.
+## Contributors
+
+| # | Name | Role |
+|---|---|---|
+| 1 | — | — |
+| 2 | — | — |
+| 3 | — | — |
+| 4 | — | — |
+| 5 | — | — |
+| 6 | — | — |
+
+---
+
+## License
+
+Academic project — Helwan University, Data Science & AI Department.  
 Not intended for commercial use.
