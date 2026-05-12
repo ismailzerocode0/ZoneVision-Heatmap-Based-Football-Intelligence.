@@ -3,6 +3,7 @@ Deep learning project predicting football play styles using heatmaps and zone-ba
 
 *Introduction*
 Project Title
+
 ZoneVision – Heatmap-Based Football Intelligence
 
 Overview
