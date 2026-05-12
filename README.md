@@ -1,29 +1,117 @@
-# ZoneVision-Heatmap-Based-Football-Intelligence.
-Deep learning project predicting football play styles using heatmaps and zone-based analysis.
+ZoneVision — Heatmap-Based Football Intelligence
 
-*Introduction*
-Project Title
+A deep learning–driven football analytics platform that transforms raw match statistics into tactical insights using heatmaps, sequence modeling, and multi-architecture comparison.
 
-ZoneVision – Heatmap-Based Football Intelligence
 
 Overview
-ZoneVision is a deep learning–driven football analytics platform designed to transform raw match data into actionable tactical insights. By leveraging heatmaps and zone-based analysis, the system predicts team play styles, evaluates performance, and highlights tactical trends across matches. The project integrates multiple data modalities (numerical statistics, sequential play data, and visual heatmaps) with diverse machine learning architectures (CNN, ResNet50, LSTM, and classical models) to deliver a comprehensive intelligence framework.
+ZoneVision analyzes Liverpool FC match data from the 2025–26 season to predict tactical outcomes and match results. The system integrates multiple data modalities and ML architectures into a unified intelligence pipeline.
+Prediction targets:
 
-Motivation
-Traditional football analysis often relies on isolated statistics or manual observation. ZoneVision introduces an automated, reproducible, and scalable approach that combines:
+Match result (Win / Draw / Lose)
+Goals scored (regression + category)
+Over/Under 2.5 goals
+Style of play (Attacking / Defensive / Balanced)
+Pressing intensity (High / Low)
+Midfield control, attack danger, dominant team
 
-Computer Vision for interpreting pitch heatmaps.
-Sequence Modeling for analyzing zone transitions and play evolution.
-Classical ML for structured match statistics.
-Integrated Predictions for tactical outcomes such as attacking/defensive style, pressing intensity, midfield control, and overall performance.
-Objectives
-Build a defensible and reproducible analytics pipeline for football intelligence.
-Provide multi-target predictions (match result, goals, play style, pressing, control).
-Enable real-time simulation and minimap visualization as innovative extensions.
-Support analysts, coaches, and researchers with clear, audience-ready deliverables.
-Innovation
-ZoneVision goes beyond standard academic projects by:
 
-Combining heatmap-based vision models with zone-sequence LSTMs.
-Delivering real-time overlays and minimap visualizations for match simulation.
-Offering a unified platform that bridges tactical prediction with interactive visualization.
+Architecture Overview
+Raw Excel Data (Team Stats Liverpool 25-26.xlsx)
+        │
+        ▼
+Data Cleaning & Feature Engineering
+        │
+        ├──► Tabular Features ──► Logistic Regression
+        │                    ──► Random Forest (Classifier + Regressor)
+        │                    ──► Feedforward NN
+        │                    ──► DNN (128 → 64 → 32 → Softmax)
+        │                    ──► LSTM (sequential reshape)
+        │
+        └──► Heatmap Images  ──► Custom CNN
+                             ──► ResNet50 (fine-tuned)
+                             ──► Vision Transformer (ViT-B16)
+
+Project Structure
+ZoneVision/
+├── DNN_PROJECT.ipynb               # Main notebook: tabular + DNN models
+├── DNN_Match_PROJECT.ipynb         # Match analyzer: YOLO-based real-time tracking
+├── Team Stats Liverpool 25-26.xlsx # Raw dataset
+├── cleaned_features.csv            # Processed tabular features
+├── cleaned_features_with_targets.csv
+├── cleaned_features_with_all_predictions.csv
+├── heatmaps/
+│   ├── Win/
+│   ├── Draw/
+│   └── Lose/
+├── match_heatmaps/
+├── cnn_match_predictions.csv
+├── predictions.csv
+└── best_resnet_model.h5
+
+Dataset
+Source: Custom-collected Liverpool FC match statistics (2024–2026)
+Size: ~60 matches, 104 features per match
+Target variable: Match result derived from Goals vs Conceded goals
+Key features used:
+
+xG, Shots / on target, Passes / accurate, Possession, %
+Duels / won, Interceptions, Clearances, Aerial duels / won
+Opponent equivalents for all features (_opp suffix)
+
+
+Models & Results
+ModelTypeAccuracyLogistic RegressionBaseline75.0%Random Forest ClassifierEnsemble75.0%LSTMSequential DL75.0%Feedforward NNDeep Learning75.0%DNN (128→64→32)Deep Learning66.7%CNN (heatmap images)Computer Vision63.6%ResNet50 (fine-tuned)Transfer Learning54.5%Vision Transformer (ViT)Transformer61.8%
+Random Forest Regressor — Goal prediction: MSE = 0.0078, R² = 0.986
+
+Note: ResNet50 and ViT underperformed due to domain gap — pretrained ImageNet weights are optimized for natural image textures, not synthetic 4-zone color blocks. A custom CNN with the heatmap-specific architecture was adopted as the optimal visual model.
+
+
+Tech Stack
+
+Python 3.12
+pandas, numpy, scikit-learn
+tensorflow / keras — NN, DNN, CNN, ResNet50, LSTM
+torch, transformers — Vision Transformer (ViT-B16)
+mplsoccer, matplotlib, seaborn — pitch visualization
+ultralytics (YOLOv8) — real-time player tracking
+opencv-python — video frame processing
+
+
+Real-Time Match Analyzer (DNN_Match_PROJECT)
+A separate computer vision pipeline built on YOLOv8 for live match video:
+
+Player detection via YOLOv8n with confidence filtering
+Team classification via HSV jersey color analysis (Liverpool red vs Bournemouth blue)
+Ball detection via Hough Circles + color segmentation
+IoU-based tracking with trail visualization
+Minimap overlay projected from frame coordinates
+HUD showing live player counts, match time, and field stats
+
+Run:
+bashpython analyzer.py "Liverpool vs Bournemouth.mp4" --output out.mp4
+
+Setup & Usage
+1. Install dependencies
+bashpip install tensorflow torch transformers ultralytics mplsoccer opencv-python scikit-learn pandas numpy seaborn matplotlib
+2. Add dataset
+Place Team Stats Liverpool 25-26.xlsx in the working directory (or /content/ on Colab).
+3. Run notebooks
+Open either notebook in Google Colab and run all cells top-to-bottom.
+
+Heatmap images are auto-generated by the pipeline — no manual prep needed.
+
+
+Key Design Decisions
+Why heatmaps as CNN input?
+Raw tabular stats lose spatial context. Converting match stats to 4-zone or 9-zone pitch grids provides a visual representation of where activity concentrated, enabling image-based classification.
+Why LSTM on tabular data?
+Match stats reshaped to (samples, 1, features) allows the LSTM to treat each feature vector as a temporal step — a lightweight way to capture sequential patterns without a multi-game time series.
+Why ResNet50 underperformed?
+Pretrained weights encode natural image textures (edges, shadows, complex gradients). Synthetic color-block heatmaps don't align with that feature space, causing the frozen layers to act as noise rather than useful priors.
+
+Contributors
+#NameRole1——2——3——4——5——6——
+
+License
+Academic project — Helwan University, Data Science & AI Department.
+Not intended for commercial use.
